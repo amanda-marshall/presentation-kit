@@ -19,7 +19,7 @@ begin
 	end;
 
 	# Add paragraphs
-	if paragraphs.count() > 1 then
+	if paragraphs.count() >= 1 then
 		loop
 			int i = 1;
 		until i > paragraphs.count() begin
