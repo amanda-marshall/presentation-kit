@@ -16,10 +16,10 @@ end;
 
 # Create a incremental sequence, randomised
 sub
-  array<int,1> randomSequence(int length)
+  array<int,1> randomSequence(int startIndex, int length)
 begin
   array<int> out[0];
-  loop int i = 1; until i > length begin
+  loop int i = startIndex; until i > (startIndex + length) begin
     out.add(i);
     i = i + 1;
   end;
