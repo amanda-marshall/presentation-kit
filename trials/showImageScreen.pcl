@@ -1,0 +1,31 @@
+sub
+  showImageScreen(
+    string imagePath, # Image to load
+    int duration, # How long to present the image for
+    string triggerName # What trigger to send when the image is presented
+  )
+begin
+
+  # Create trial
+  trial t = new trial;
+  t.set_type(fixed);
+  t.set_duration(duration);
+
+  # Create new picture and set background color
+  picture p = new picture();
+  p.set_background_color(colorBackgroundDark);
+
+  # Load image at center of screen
+  bitmap b = new bitmap(imagePath);
+  p.add_part(b, 0, 0);
+
+  # Make stimulus event
+  stimulus_event se = t.add_stimulus_event(p);
+
+  # Set trigger
+  setTrigger(se, triggerName);
+
+  # Present image
+  t.present();
+
+end;
