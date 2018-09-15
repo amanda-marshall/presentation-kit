@@ -1,0 +1,107 @@
+# Draw a simple EKG graphic
+sub
+  line_graphic getEKGGraphic
+begin
+  line_graphic ekg = new line_graphic();
+  ekg.set_line_width(6);
+  ekg.set_line_color(colorHighlightPositive);
+  ekg.set_join_type(join_circle);
+  ekg.add_line(0, 92, 94.5, 92);
+  array<double> points[][] = {{101, 76.5},{116.5, 102},{125.5, 5.5},
+    {137, 151},{145.5, 92},{199.5, 92},{210.5, 77.5},{223, 102},
+    {241.5, 77.5},{259, 113.5},{266,1},{277.5, 167},{286, 92},
+    {302, 92},{314.5,73},{328,92},{420,92}};
+  loop int i = 1; until i > points.count() begin
+    ekg.line_to(points[i][1], points[i][2]);
+    i = i + 1;
+  end;
+  ekg.redraw();
+  return ekg;
+end;
+
+sub
+  showHeartbeat(
+    int count,
+    int delay,
+    string triggerName
+  )
+begin
+
+  # Create 10ms 1000Hz Sine Signal at 75Db
+  wavefile sine_wave = new wavefile(new asg::sine(10.0, 1000.0, 0.0));
+  sound beep = new sound(sine_wave);
+  beep.set_attenuation(0.25);
+
+  # Make EKG graphic
+  picture p = new picture();
+  p.set_background_color(colorBackgroundDark);
+  p.add_part(getEKGGraphic(), -210, (-84-8));
+
+  trial t = new trial();
+  t.add_stimulus_event(p); # getCross(96, 8, fontColor)
+
+  # Check if input port was set up
+	bool has_ports = input_port_manager.port_count() > 0;
+	if !has_ports then exit("No input port for heart rate triggers defined"); end;
+
+	input_port port = input_port_manager.get_port(1);
+	port.clear();
+
+  loop
+    int timeNow;
+    int timeStart = clock.time();
+    bool timeOut = false;
+    int beepsPresented = 0;
+    int timeSinceLastBeep = timeStart - 400;
+    array<int> pendingBeeps[0];
+  until
+    beepsPresented > count || timeOut
+  begin
+
+    # Present each frame about 60 times per second
+    t.set_duration(17);
+    timeNow = clock.time();
+
+    # End trial if there isn't a single heartbeat detected after 2s
+    timeOut = (beepsPresented == 0 && timeNow-timeStart > 2000);
+
+    # Go through new port codes for heart beat detection
+    loop int i = 1; until i > port.total_count()
+		begin
+      if port.codes(i) == 255 then
+        # Enforce minimum delay between recorded beeps
+        if timeNow - timeSinceLastBeep >= 200  then
+          pendingBeeps.add(timeNow + delay);
+          timeSinceLastBeep = timeNow;
+        end;
+        break;
+		  end;
+			i = i + 1;
+		end;
+
+    # Play sounds after a delay
+    int pendingBeepsCount = pendingBeeps.count();
+    if pendingBeepsCount > beepsPresented then
+
+      # Check if first queued, but unplayed heartbeat should be played
+      if timeNow >= pendingBeeps[beepsPresented+1] then
+
+        # Don't exceed maximum beep count
+        if beepsPresented < count then
+          beep.present();
+          sendTrigger(triggerName);
+        end;
+
+        # Make sure trial is long enough to play whole sound
+        t.set_duration(100);
+        beepsPresented = beepsPresented + 1;
+
+      end;
+    end;
+
+    port.clear();
+    t.present();
+
+  end;
+
+end;

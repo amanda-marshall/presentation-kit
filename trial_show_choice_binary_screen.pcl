@@ -1,0 +1,42 @@
+sub
+  showChoiceBinaryScreen(
+    string labelInstruction, # What should the participant answer?
+    string labelA, # Label to display at start of scale
+    string labelB, # Label to display at end of scale
+    int buttonCodeA, # Button code to press to decrease rating
+    int buttonCodeB # Button code tp press to increase
+  )
+begin
+
+  # Settings
+  double width = 740;
+
+  trial t = new trial();
+  t.set_duration(forever);
+  t.set_type(specific_response);
+
+  array<int> viableCodes[2];
+  viableCodes[1] = buttonCodeA;
+  viableCodes[2] = buttonCodeB;
+  t.set_terminator_buttons(viableCodes);
+
+  picture p = new picture();
+
+  # Question to answer
+  text tIntro = getText("<b>" + labelInstruction + "</b>", 2);
+  p.add_part(tIntro, 0, 160);
+
+  # Answer option A
+  text tA = getText(highlightButtons(labelA), 1);
+  p.add_part(tA, 0, 0);
+  alignPicturePart(p, -1, width * (-0.5), false);
+
+  # Answer option B
+  text tB = getText(highlightButtons(labelB), 1);
+  p.add_part(tB, 0, 0);
+  alignPicturePart(p, -1, width * 0.5, true);
+
+  t.add_stimulus_event(p);
+  t.present();
+
+end;

@@ -1,0 +1,127 @@
+# Settings
+double sliderWidth = 740;
+double sliderHeight = 16;
+double sliderThumbSize = 32;
+rgb_color sliderTrackColor = rgb_color(196, 196, 196);
+rgb_color sliderTrackActiveColor = colorHighlightLight;
+rgb_color sliderThumbColor = colorHighlight;
+
+# Utility function for drawing a circle quickly
+sub ellipse_graphic drawCircle(double diameter, rgb_color color) begin
+  ellipse_graphic circle = new ellipse_graphic();
+  circle.set_size(diameter, diameter);
+  circle.set_dimensions(diameter, diameter);
+  circle.set_color(color);
+  circle.redraw();
+  return circle;
+end;
+
+# Draw a basic rating screen that returns a value between min and max
+sub
+  double showRatingScreen(
+    string labelInstruction, # What should the participant rate?
+    double min, # Minimum value
+    double max, # Maximum value
+    string labelMin, # Label to display at start of scale
+    string labelMax, # Label to display at end of scale
+    int buttonCodeMin, # Button code to press to decrease rating
+    int buttonCodeMax # Button code tp press to increase rating
+  )
+begin
+
+  trial t = new trial();
+  t.set_type(fixed);
+  t.set_duration(17); # Try for 60FPS
+
+  picture p = new picture();
+
+  # Add intro text
+  text tIntro = getText("<b>" + labelInstruction + "</b>", 2);
+  p.add_part(tIntro, 0, 160);
+
+  # Add continue text
+  text tContinue = getText(highlightButtons("<b>" + defaultLabelContinue + "</b>"), 1);
+  p.add_part(tContinue, 0, -160);
+
+  # Add minimum label
+  text tMin = getText(highlightButtons(labelMin), 1);
+  p.add_part(tMin, 0, 40);
+  alignPicturePart(p, -1, sliderWidth * (-0.5) - sliderHeight * 0.5, false);
+
+  # Add maximum label
+  text tMax = getText(highlightButtons(labelMax), 1);
+  p.add_part(tMax, 0, 40);
+  alignPicturePart(p, -1, sliderWidth * 0.5 + sliderHeight * 0.5, true);
+
+  # Draw track
+  ellipse_graphic track_start = drawCircle(sliderHeight, sliderTrackColor); # Start circle
+  ellipse_graphic track_end = drawCircle(sliderHeight, sliderTrackColor); # End circle
+  box track = new box(sliderHeight, sliderWidth, sliderTrackColor); # Track
+  p.add_part(track_start, sliderWidth * (-0.5), 0);
+  p.add_part(track_end, sliderWidth * 0.5, 0);
+  p.add_part(track, 0, 0);
+
+  # Draw active track
+  ellipse_graphic track_active_start = drawCircle(sliderHeight, sliderTrackActiveColor);
+  box track_active = new box(sliderHeight, sliderWidth, sliderTrackActiveColor);
+  p.add_part(track_active_start, sliderWidth * (-0.5), 0);
+  p.add_part(track_active, 0, 0);
+
+  ## Draw thumb
+  ellipse_graphic thumb = drawCircle(sliderThumbSize, sliderThumbColor);
+  p.add_part(thumb, 0, 0);
+
+  # Add picture part to trial
+  t.add_stimulus_event(p);
+
+  int partCount = p.part_count();
+
+  # Settings
+	double increment = 1.0;
+	double rating = 50.0;
+	double x = 0.0;
+  double length = 0.0;
+
+  double sliderPositionStart = sliderWidth * (-0.5) + sliderHeight * 0.5;
+  double sliderPositionRange = (sliderWidth - sliderHeight);
+
+	loop
+		int startResponseCount = response_manager.total_response_count();
+		int button_code = 0;
+	until
+    button_code == 1
+	begin
+
+		int nowResponseCount = response_manager.total_response_count();
+
+		# Get button code
+		x = 0.0;
+    length = 0.0;
+		if nowResponseCount > startResponseCount then
+			button_code = response_manager.last_response();
+		end;
+
+		# Last button was left
+		if button_code == buttonCodeMin then
+			rating = rating - increment; # Decrement
+			if rating < 0.0 then rating = 0.0; end; # Min 100
+		# Last button was right
+		elseif button_code == buttonCodeMax then
+			rating = rating + increment; # Increment
+			if rating > 100.0 then rating = 100.0; end; # Max 100
+		end;
+
+    x = sliderPositionStart + sliderPositionRange * (rating / 100.0);
+    length = x - (sliderWidth * (-0.5));
+    track_active.set_width(length);
+
+    p.set_part_x(partCount-1, x - length * 0.5);
+		p.set_part_x(partCount, x);
+
+		t.present();
+
+	end;
+
+  return min + (max-min) * (rating / 100.0);
+
+end;

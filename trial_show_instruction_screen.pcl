@@ -1,0 +1,48 @@
+sub
+	showInstructionScreen(
+		string title,
+		array<string,1> paragraphs
+	)
+begin
+
+	trial t = new trial();
+	t.set_type(first_response);
+	t.set_duration(forever);
+
+	picture p = new picture();
+
+	string allText = "";
+
+	# Add title text
+	if title != "" then
+		allText = "<font size='" + string(fontSizes[3]) + "'><b>" + title + "</b></font>\n";
+	end;
+
+	# Add paragraphs
+	if paragraphs.count() > 1 then
+		loop
+			int i = 1;
+		until i > paragraphs.count() begin
+			allText = allText + "\n\n" + paragraphs[i];
+			i = i + 1;
+		end;
+	end;
+
+	# Add progress instructions
+	allText = allText + "\n\n\n<b>" + defaultLabelContinue + "</b>";
+
+	allText = highlightButtons(allText);
+
+	# Compose text picture_part
+	text tt = getText(allText, 1);
+	tt.set_align(align_left);
+	tt.redraw();
+	p.add_part(tt, 0, 0);
+
+	# Add text picture_part to trial
+	t.add_stimulus_event(p);
+
+	# Present trial
+	t.present();
+
+end;

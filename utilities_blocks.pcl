@@ -1,0 +1,15 @@
+# Take a two-dimensional array of ints and expand into a randomised trial manifest
+sub
+  array<int,1> randomTrialCodeManifest(array<int,2> specs)
+begin
+  array<int> out[0];
+  loop int i = 1; until i > specs.count() begin
+    loop int j = 1; until j > specs[i][2] begin
+      out.add(specs[i][1]);
+      j = j + 1;
+    end;
+    i = i + 1;
+  end;
+  out.shuffle();
+  return out;
+end;

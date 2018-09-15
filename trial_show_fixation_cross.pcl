@@ -1,0 +1,33 @@
+# Utility function to make a cross
+sub
+  picture getCross(
+    int size,
+    int barWidth,
+    rgb_color color
+  )
+begin
+  picture p = new picture();
+  p.add_part(new box(barWidth, size, fontColor), 0, 0);
+  p.add_part(new box(size, barWidth, fontColor), 0, 0);
+  return p;
+end;
+
+# Makes a trial of a given duration with a fixation cross and sends a trigger
+sub
+  showFixationCross(
+    int duration,
+    string triggerName
+  )
+begin
+
+  trial t = new trial;
+
+  picture fixationCross = getCross(96, 8, fontColor);
+  stimulus_event se = t.add_stimulus_event(fixationCross);
+  setTrigger(se, triggerName);
+
+  t.set_duration(duration);
+
+  t.present();
+
+end;

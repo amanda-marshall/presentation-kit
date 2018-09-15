@@ -1,0 +1,15 @@
+sub
+  alignPicturePart(
+    picture p,
+    int index,
+    double x,
+    bool isRight
+  )
+begin
+  if (index == -1) then index = p.part_count(); end;
+  if isRight then
+    p.set_part_x(index, x, p.RIGHT_COORDINATE);
+  else
+    p.set_part_x(index, x, p.LEFT_COORDINATE);
+  end;
+end;

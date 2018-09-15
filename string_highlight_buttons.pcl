@@ -1,0 +1,16 @@
+# Internal variables
+string highlightFontTag = "<font color='" + string(colorHighlight.red_byte()) + ", " + string(colorHighlight.green_byte()) + ", " + string(colorHighlight.blue_byte()) + "'>";
+
+sub
+    string highlightButtons(
+      string str
+    )
+begin
+
+    # Highlight buttons
+	str = str.replace("[", highlightFontTag + "<b>[");
+	str = str.replace("]", "]</b></font>");
+
+    return str;
+
+end;
