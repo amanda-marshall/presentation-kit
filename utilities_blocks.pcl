@@ -24,4 +24,5 @@ begin
     i = i + 1;
   end;
   out.shuffle();
+  return out;
 end;
