@@ -1,0 +1,17 @@
+# Return minimum
+sub
+  int min(int a, int b)
+begin
+  int out;
+  if a < b then out = a; else out = b; end;
+  return out;
+end;
+
+# Return maximum
+sub
+  int max(int a, int b)
+begin
+  int out;
+  if a > b then out = a; else out = b; end;
+  return out;
+end;
