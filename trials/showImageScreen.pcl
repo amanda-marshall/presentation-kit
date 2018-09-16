@@ -1,7 +1,7 @@
 sub
   showImageScreen(
     string imagePath, # Image to load
-    int duration, # How long to present the image for
+    int duration # How long to present the image for
   )
 begin
 
