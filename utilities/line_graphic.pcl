@@ -1,0 +1,35 @@
+# Utility function for drawing a polyline that can be optionally closed
+sub
+  drawPolyLine(
+    line_graphic& lineGraphic,
+    array<double,2> points,
+    bool shouldClose
+  )
+begin
+
+  if points.count() > 1 then
+
+    lineGraphic.add_line(
+      points[2][1],
+      points[2][2],
+      points[1][1],
+      points[1][2]
+    );
+
+    if points.count() > 2 then
+      loop int i = 2; until i > points.count() begin
+        lineGraphic.line_to(points[i][1], points[i][2]);
+        i = i + 1;
+      end;
+    end;
+
+    if shouldClose then
+      lineGraphic.line_to(points[1][1], points[1][2]);
+    else
+      int iPenultimate = points.count() - 1;
+      lineGraphic.line_to(points[iPenultimate][1], points[iPenultimate][2]);
+    end;
+
+  end;
+
+end;
