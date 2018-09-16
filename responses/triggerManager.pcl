@@ -43,7 +43,7 @@ end;
 
 # Utility function to manually record an event code to the log and send a port code
 sub
-	sendTrigger(string triggerName)
+	sendTriggerCustom(string triggerName, string suffix)
 begin
 
 	# Find index of specified triggerName amongst all trigger names
@@ -56,7 +56,7 @@ begin
 	end;
 
 	# Trigger found
-	string tName = triggerNames[index];
+	string tName = triggerNames[index] + suffix;
 	int tCode = triggerCodes[index];
 
 	# Add triggerName to logfile
@@ -76,6 +76,13 @@ begin
 	end;
 
 end;
+
+sub
+	sendTrigger(string triggerName)
+begin
+	sendTriggerCustom(triggerName, "");
+end;
+
 
 
 # Utilitiy function to set event code and port code on a stimulus event at the same time
