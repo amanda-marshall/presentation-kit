@@ -4,3 +4,4 @@ include "showInstructionScreen.pcl";
 include "showRatingScreen.pcl";
 include "showHeartbeat.pcl";
 include "showImageScreen.pcl";
+include "showSound.pcl";
