@@ -1,0 +1,63 @@
+# Draw a simple EKG graphic
+sub
+  line_graphic getSoundGraphic
+begin
+
+  line_graphic graphic = new line_graphic();
+  graphic.set_line_width(6);
+  graphic.set_line_color(colorHighlightPositive);
+  graphic.set_join_type(join_circle);
+  graphic.set_next_join_type(join_circle);
+
+  array<double> pointsSpeaker[][] = {{3.0, 44.0}, {41.37, 44.0}, {86.0, 4.0}, {86.0, 134.0}, {41.37, 94.0}, {3.0, 94.0}};
+  array<double> pointsWaveOne[][] = {{108, 38.95}, {116.05, 69}, {108, 100}};
+  array<double> pointsWaveTwo[][] = {{128, 19}, {137.77, 49}, {137.77, 89}, {128, 119}};
+  array<double> pointsWaveThree[][] = {{148.0, 4.0}, {158.0, 34.0}, {163.0, 69.0}, {158.0, 104.0}, {148.0, 134.0}};
+
+  drawPolyLine(graphic, pointsSpeaker, true);
+  drawPolyLine(graphic, pointsWaveOne, false);
+  drawPolyLine(graphic, pointsWaveTwo, false);
+  drawPolyLine(graphic, pointsWaveThree, false);
+
+  graphic.redraw();
+  return graphic;
+
+end;
+
+# Present a sound file at full length
+# The audio will be played in the middle of the trial
+sub
+  showSound(
+    string soundFile, # The path to the sound file to be played
+    int duration # The duration of the trial
+  )
+begin
+
+  # Set up trial
+  trial t = new trial();
+  t.set_type(fixed);
+
+  # Make Sound graphic
+  picture p = new picture();
+  p.set_background_color(colorBackgroundDark);
+  p.add_part(getSoundGraphic(), -83, -69);
+  t.add_stimulus_event(p);
+
+  # Make sound
+  wavefile w = new wavefile(soundFile);
+  sound s = new sound(w);
+  int soundDuration = w.duration();
+
+  int timeTotal = max(duration, soundDuration);
+  int startTime = int(round(double(timeTotal) * 0.5 - double(soundDuration) * 0.5, 0));
+
+  t.set_duration(timeTotal);
+
+  # Add sound to trial
+  stimulus_event se = t.add_stimulus_event(s);
+  se.set_time(startTime);
+
+  # Present
+  t.present();
+
+end;
