@@ -15,6 +15,7 @@ array<int> fontSizes[] = { 18, 24, 36 };
 string defaultLabelContinue = "Drücke [Enter] um fortzufahren";
 
 # Include submodules
+include "files/index.pcl"; # File utilities
 include "responses/index.pcl"; # Response module
 include "utilities/index.pcl"; # Utility modules
 include "trials/index.pcl"; # Trial modules

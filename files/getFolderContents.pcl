@@ -1,0 +1,72 @@
+# Write all files paths of files in a folder into a provided array,
+# if they contain all of the filter substrings provided
+sub
+  int getFolderContentsFiltered(
+    string folderPath,
+    array<string,1>& fileList,
+    array<string,1> filterList
+  )
+begin
+
+  int pathLength = folderPath.count();
+  int fileCount = get_directory_files(folderPath, fileList);
+
+  # Don't bother to filter if there are no filters
+  if filterList.count() == 0 then
+    return fileCount;
+  end;
+
+  # Collection array for correct files
+  array<string> fileListFinal[0];
+
+  # Go through all files to check filter conditions
+  loop
+    int i = 1;
+  until i > fileCount begin
+
+    # Get file name without folder path
+    string filePath = fileList[i];
+    int filePathLength = filePath.count();
+    string fileName = filePath.substring(pathLength + 1, filePathLength-pathLength);
+
+    # Check filter conditions
+    bool skip = false;
+    loop
+      int j = 1;
+    until j > filterList.count() begin
+      if fileName.find(filterList[j]) == 0 then
+        skip = true;
+        break;
+      end;
+      j = j + 1;
+    end;
+
+    # Increment
+    i = i + 1;
+
+    # Skip condition
+    if skip then continue; end;
+
+    # Collect this file
+    fileListFinal.add(filePath);
+
+  end;
+
+  # Replace original array with filtered one
+  fileList.resize(0);
+  fileList.append(fileListFinal);
+
+  return fileListFinal.count();
+
+end;
+
+# Write all files paths of files in a folder into a provided array
+sub
+  int getFolderContents(
+    string folderPath,
+    array<string,1>& fileList
+  )
+begin
+  array<string> filterList[0];
+  return getFolderContentsFiltered(folderPath, fileList, filterList);
+end;
