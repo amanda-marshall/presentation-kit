@@ -29,7 +29,8 @@ end;
 sub
   showSound(
     string soundFile, # The path to the sound file to be played
-    int duration # The duration of the trial
+    int duration, # The duration of the trial
+    string triggerName # Trigger to be sent
   )
 begin
 
@@ -55,6 +56,7 @@ begin
 
   # Add sound to trial
   stimulus_event se = t.add_stimulus_event(s);
+  setTrigger(se, triggerName);
   se.set_time(startTime);
 
   # Present
