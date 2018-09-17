@@ -5,7 +5,7 @@ begin
 
   line_graphic graphic = new line_graphic();
   graphic.set_line_width(6);
-  graphic.set_line_color(colorHighlightPositive);
+  graphic.set_line_color(colorHighlight);
   graphic.set_join_type(join_circle);
   graphic.set_next_join_type(join_circle);
 
