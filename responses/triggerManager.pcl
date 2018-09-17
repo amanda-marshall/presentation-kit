@@ -51,7 +51,7 @@ begin
 
 	# No trigger found
 	if index == -1 then
-		term.print_line("WARNING: " + triggerName + " could not be found, no trigger sent.");
+		term.print_line("WARNING: '" + triggerName + "' could not be found, no trigger sent.");
 		return;
 	end;
 
@@ -95,7 +95,7 @@ begin
 
 	# No trigger found
 	if index == -1 then
-		term.print_line("WARNING: " + triggerName + " could not be found, no trigger sent.");
+		term.print_line("WARNING: '" + triggerName + "' could not be found, no trigger sent.");
 		return;
 	end;
 
