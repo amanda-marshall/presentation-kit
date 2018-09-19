@@ -1,7 +1,8 @@
 sub
-	showInstructionScreen(
+	showInstructionScreenCustom(
 		string title,
-		array<string,1> paragraphs
+		array<string,1> paragraphs,
+		bool showContinueText
 	)
 begin
 
@@ -29,7 +30,9 @@ begin
 	end;
 
 	# Add progress instructions
-	allText = allText + "\n\n\n<b>" + defaultLabelContinue + "</b>";
+	if showContinueText then
+		allText = allText + "\n\n\n<b>" + defaultLabelContinue + "</b>";
+	end;
 
 	allText = highlightButtons(allText);
 
@@ -45,4 +48,14 @@ begin
 	# Present trial
 	t.present();
 
+end;
+
+# Default function
+sub
+	showInstructionScreen(
+		string title,
+		array<string,1> paragraphs
+	)
+begin
+	showInstructionScreenCustom(title, paragraphs, true);
 end;
