@@ -1,7 +1,8 @@
 sub
   showImageScreen(
     string imagePath, # Image to load
-    int duration # How long to present the image for
+    int duration, # How long to present the image for
+    string triggerName
   )
 begin
 
@@ -20,6 +21,7 @@ begin
 
   # Make stimulus event
   stimulus_event se = t.add_stimulus_event(p);
+  setTrigger(se, triggerName);
 
   # Present image
   t.present();
