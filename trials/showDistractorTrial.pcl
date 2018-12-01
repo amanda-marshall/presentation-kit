@@ -29,30 +29,36 @@ begin
     p.add_part(new box(boxSize, boxStrokeWidth, colorForeground), boxSize * 0.5 - boxStrokeWidth * 0.5, 0); # Right Line
   end;
 
-  # Draw cross
-  if (isShowingCross) then
+  if isShowingCross || isShowingCheckmark then
+
+    # Set up line graphic
     line_graphic lg = new line_graphic();
     lg.set_line_width(boxStrokeWidth);
-    lg.set_join_type(join_none);
+    lg.set_join_type(join_point);
 
+    # Pick line color based on filled/unfilled box background
     if isFilled then
       lg.set_line_color(colorBackground);
     else
       lg.set_line_color(colorForeground);
     end;
 
+    # Set Scaling
     double scalingFactor = boxSize / 128.0;
-    array<double> points[][] = {{40.0,40.0}, {64.0, 64.0}, {88.0, 40.0}, {64.0, 64.0}, {88.0, 88.0}, {64.0, 64.0}, {40.0, 88.0}};
 
-    drawPolyLineScaled(lg, points, scalingFactor, false);
+    # Define points to be drawn either for a cross or checkmark
+    if isShowingCross then
+      array<double> points[][] = {{40.0,40.0}, {64.0, 64.0}, {88.0, 40.0}, {64.0, 64.0}, {88.0, 88.0}, {64.0, 64.0}, {40.0, 88.0}};
+      drawPolyLineScaled(lg, points, scalingFactor, false);
+    else
+      array<double> points[][] = {{40.0, 64.0}, {56.0, 80.0}, {88.0, 40.0}};
+      drawPolyLineScaled(lg, points, scalingFactor, false);
+    end;
 
+    # Draw
     lg.redraw();
     p.add_part(lg, -64 * scalingFactor, 64 * scalingFactor);
 
-  end;
-
-  # Draw Checkmark
-  if (isShowingCheckmark) then
   end;
 
   return p;
@@ -66,7 +72,7 @@ begin
 
   trial t = new trial;
 
-  picture box = getBox(isFilled, true, false);
+  picture box = getBox(isFilled, false, true);
   stimulus_event se = t.add_stimulus_event(box);
 
   t.set_duration(1000);
