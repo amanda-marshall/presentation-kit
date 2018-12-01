@@ -39,10 +39,10 @@ begin
   p.add_part(getEKGGraphic(), -210, (-84-8));
 
   trial t = new trial();
-  stimulus_event se = t.add_stimulus_event(p); # getCross(96, 8, fontColor)
+  t.add_stimulus_event(p); # getCross(96, 8, fontColor)
 
   # Send trigger at start of presentation
-  setTrigger(se, triggerName);
+  sendTrigger(triggerName);
 
   # Check if input port was set up
 	bool has_ports = input_port_manager.port_count() > 0;
