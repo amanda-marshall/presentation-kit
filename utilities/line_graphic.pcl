@@ -1,35 +1,47 @@
 # Utility function for drawing a polyline that can be optionally closed
 sub
-  drawPolyLine(
-    line_graphic& lineGraphic,
-    array<double,2> points,
-    bool shouldClose
+  drawPolyLineScaled(
+      line_graphic& lineGraphic,
+      array<double,2> points,
+      double scalingFactor,
+      bool shouldClose
   )
 begin
 
   if points.count() > 1 then
 
     lineGraphic.add_line(
-      points[2][1],
-      points[2][2],
-      points[1][1],
-      points[1][2]
+      points[2][1] * scalingFactor,
+      points[2][2] * (-1.0) * scalingFactor,
+      points[1][1] * scalingFactor,
+      points[1][2] * (-1.0) * scalingFactor
     );
 
     if points.count() > 2 then
       loop int i = 2; until i > points.count() begin
-        lineGraphic.line_to(points[i][1], points[i][2]);
+        lineGraphic.line_to(points[i][1] * scalingFactor, points[i][2] * (-1.0) * scalingFactor);
         i = i + 1;
       end;
     end;
 
     if shouldClose then
-      lineGraphic.line_to(points[1][1], points[1][2]);
+      lineGraphic.line_to(points[1][1] * scalingFactor, points[1][2] * (-1.0) * scalingFactor);
     else
       int iPenultimate = points.count() - 1;
-      lineGraphic.line_to(points[iPenultimate][1], points[iPenultimate][2]);
+      lineGraphic.line_to(points[iPenultimate][1] * scalingFactor, points[iPenultimate][2] * (-1.0) * scalingFactor);
     end;
 
   end;
 
+end;
+
+# Default function for scaling factor 1
+sub
+  drawPolyLine(
+    line_graphic& lineGraphic,
+    array<double,2> points,
+    bool shouldClose
+  )
+begin
+  drawPolyLineScaled(lineGraphic, points, 1.0, shouldClose);
 end;
