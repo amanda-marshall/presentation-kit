@@ -1,5 +1,6 @@
 include "showChoiceBinaryScreen.pcl";
 include "showChoiceMultiScreen.pcl";
+include "showDistractorTrial.pcl";
 include "showFixationCross.pcl";
 include "showHeartbeat.pcl";
 include "showImageScreen.pcl";

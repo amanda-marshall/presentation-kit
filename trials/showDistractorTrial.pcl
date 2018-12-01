@@ -1,0 +1,76 @@
+# Settins
+int boxSize = 128;
+int boxStrokeWidth = 8;
+
+# Utility function to paint
+sub
+  picture getBox(
+    bool isFilled,
+    bool isShowingCross,
+    bool isShowingCheckmark
+  )
+begin
+
+  # Internal Settings
+  rgb_color colorForeground = fontColor;
+  rgb_color colorBackground = colorBackgroundLight;
+
+  picture p = new picture();
+
+  # Draw the box, filled or not filled
+  if isFilled then
+    # For a filled box, only one box is needed
+    p.add_part(new box(boxSize, boxSize, colorForeground), 0, 0);
+  else
+    # Draw individual strokes: top, bottom, left, right
+    p.add_part(new box(boxStrokeWidth, boxSize, colorForeground), 0, boxSize * 0.5 - boxStrokeWidth * 0.5); # Top line
+    p.add_part(new box(boxStrokeWidth, boxSize, colorForeground), 0, boxSize * (-0.5) + boxStrokeWidth * 0.5); # Bottom line
+    p.add_part(new box(boxSize, boxStrokeWidth, colorForeground), boxSize * (-0.5) + boxStrokeWidth * 0.5, 0); # Left Line
+    p.add_part(new box(boxSize, boxStrokeWidth, colorForeground), boxSize * 0.5 - boxStrokeWidth * 0.5, 0); # Right Line
+  end;
+
+  # Draw cross
+  if (isShowingCross) then
+    line_graphic lg = new line_graphic();
+    lg.set_line_width(boxStrokeWidth);
+    lg.set_join_type(join_none);
+
+    if isFilled then
+      lg.set_line_color(colorBackground);
+    else
+      lg.set_line_color(colorForeground);
+    end;
+
+    double scalingFactor = boxSize / 128.0;
+    array<double> points[][] = {{40.0,40.0}, {64.0, 64.0}, {88.0, 40.0}, {64.0, 64.0}, {88.0, 88.0}, {64.0, 64.0}, {40.0, 88.0}};
+
+    drawPolyLineScaled(lg, points, scalingFactor, false);
+
+    lg.redraw();
+    p.add_part(lg, -64 * scalingFactor, 64 * scalingFactor);
+
+  end;
+
+  # Draw Checkmark
+  if (isShowingCheckmark) then
+  end;
+
+  return p;
+
+end;
+
+# Makes a trial of a given duration with a fixation cross and sends a trigger
+sub
+  showDistractorTrial(bool isFilled)
+begin
+
+  trial t = new trial;
+
+  picture box = getBox(isFilled, true, false);
+  stimulus_event se = t.add_stimulus_event(box);
+
+  t.set_duration(1000);
+
+  t.present();
+
+end;
