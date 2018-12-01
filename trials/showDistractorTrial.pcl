@@ -1,10 +1,18 @@
 # Settins
+int hearBeatWindow = 4;
 int boxSize = 128;
 int boxStrokeWidth = 8;
+int distractorCount = 16;
+int distractorSize = 64;
+double distractorAnimationDuration = 500.0;
+double distractorAniationAsyncDelay = 200.0; # Together with the duration, this should not exceed the anticipated heartbeat interval (e.g. 1200ms)
+int displayWidth = display_device.width();
+int displayHeight = display_device.height();
 
-# Utility function to paint
+# Utility function to draw the target box in the middle
 sub
-  picture getBox(
+  addBox(
+    picture& p,
     bool isFilled,
     bool isShowingCross,
     bool isShowingCheckmark
@@ -15,7 +23,8 @@ begin
   rgb_color colorForeground = fontColor;
   rgb_color colorBackground = colorBackgroundLight;
 
-  picture p = new picture();
+  # Draw box background (to avoid distractors behind the box)
+  p.add_part(new box(boxSize + boxStrokeWidth * 2.0, boxSize + boxStrokeWidth * 2.0, colorBackground), 0, 0);
 
   # Draw the box, filled or not filled
   if isFilled then
@@ -61,22 +70,146 @@ begin
 
   end;
 
-  return p;
+end;
+
+
+# Utility function to draw the distractors
+sub
+  addDistractors(
+    picture& p,
+    array<double,1>& xO,
+    array<double,1>& yO,
+    array<double,1>& xT,
+    array<double,1>& yT,
+    double progress
+  )
+begin
+
+  # Internal Settings
+  rgb_color colorForeground = fontColor;
+  rgb_color colorBackground = colorBackgroundLight;
+
+  loop
+    int i = 1;
+  until i > distractorCount begin
+    ellipse_graphic e = new ellipse_graphic();
+    e.set_dimensions(double(distractorSize), double(distractorSize));
+    e.set_color(colorForeground);
+    e.redraw();
+    p.add_part(
+      e,
+      lerp(xO[i], xT[i], progress),
+      lerp(yO[i], yT[i], progress)
+    );
+    i = i + 1;
+  end;
 
 end;
+
+
+# Creates new target coordinates for distractors
+sub
+  newCoordinates(
+    array<double,1>& x,
+    array<double,1>& y
+  )
+begin
+  int count = x.count();
+  loop
+    int i = 1;
+  until i > count begin
+    x.fill(i, i, displayWidth * (-0.5) + double(random(distractorSize * (-2), displayWidth + distractorSize * 2)), 0.0);
+    y.fill(i, i, displayHeight * (-0.5) + double(random(distractorSize * (-2), displayHeight + distractorSize * 2)), 0.0);
+    i = i + 1;
+  end;
+end;
+
 
 # Makes a trial of a given duration with a fixation cross and sends a trigger
 sub
   showDistractorTrial(bool isFilled)
 begin
 
+  # Internal
+  array<double> xOrigin[distractorCount];
+  array<double> yOrigin[distractorCount];
+  array<double> xTarget[distractorCount];
+  array<double> yTarget[distractorCount];
+
+  # Set up initial coordinates
+  newCoordinates(xOrigin, yOrigin);
+  newCoordinates(xTarget, yTarget);
+
+  int judgementHeartBeat = random(hearBeatWindow-1, hearBeatWindow+1);
+  int judgementDelay = random(0, 600);
+
+  # Set up trial
   trial t = new trial;
+  t.set_type(fixed);
+  t.set_duration(17); # Try for 60FPS
 
-  picture box = getBox(isFilled, false, true);
-  stimulus_event se = t.add_stimulus_event(box);
+  # Check if input port was set up
+	bool has_ports = input_port_manager.port_count() > 0;
+	if !has_ports then exit("No input port for heart rate triggers defined"); end;
+	input_port port = input_port_manager.get_port(1);
+	port.clear();
 
-  t.set_duration(1000);
+  loop
+    int pulseCount = 1;
+    bool canBeJudged = false;
+    int timeStart = clock.time();
+  until pulseCount > (hearBeatWindow + 2) begin
 
-  t.present();
+    # Remove last frame
+    if t.stimulus_event_count() > 0 then
+      t.remove_stimulus_event(1);
+    end;
+
+    # Calculate movement progress
+    int timeNow = clock.time();
+    double progress;
+    if pulseCount <= 1 then
+      # Wait one heartbeat to ensure there is a small interval between the trial starting and the first movement
+      progress = 0.0;
+    else
+      progress = easeOutQuad(clamp(0.0, 1.0, ((timeNow - timeStart) / distractorAnimationDuration)));
+    end;
+
+    # Determine how soon the user can make a judgement
+    if !canBeJudged && pulseCount == judgementHeartBeat && (timeNow - timeStart) >= judgementDelay then
+      canBeJudged = true;
+    end;
+
+    # Create new frame
+    picture p = new picture();
+    addDistractors(p, xOrigin, yOrigin, xTarget, yTarget, progress);
+    addBox(p, canBeJudged, false, false);
+    t.add_stimulus_event(p);
+
+    # Go through new port codes for heart beat detection
+    loop int i = 1; until i > port.total_count()
+		begin
+      if port.codes(i) == 255 then
+
+        pulseCount = pulseCount + 1;
+
+        # Make new coordinates (not for last interval)
+        if pulseCount <= (hearBeatWindow + 1) then
+          timeStart = clock.time();
+          xOrigin = xTarget;
+          yOrigin = yTarget;
+          newCoordinates(xTarget, yTarget);
+        end;
+
+        break;
+
+		  end;
+			i = i + 1;
+		end;
+
+    port.clear();
+    t.present();
+
+  end;
 
 end;
