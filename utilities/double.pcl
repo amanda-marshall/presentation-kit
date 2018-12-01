@@ -1,0 +1,19 @@
+# Clamp number between two numbers
+sub
+  double clamp(double min, double max, double num)
+begin
+  if num < min then
+    return min;
+  elseif num > max then
+    return max;
+  end;
+  return num;
+end;
+
+
+# Linearly interpolate 2 numbers
+sub
+  double lerp(double a, double b, double t)
+begin
+  return a + (b-a) * clamp(0.0, 1.0, t);
+end;
