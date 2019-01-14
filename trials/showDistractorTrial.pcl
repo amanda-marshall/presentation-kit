@@ -4,8 +4,9 @@ int boxSize = 128;
 int boxStrokeWidth = 8;
 int distractorCount = 16;
 int distractorSize = 64;
-double distractorAnimationDuration = 500.0;
-double distractorAniationAsyncDelay = 200.0; # Together with the duration, this should not exceed the anticipated heartbeat interval (e.g. 1200ms)
+int distractorDistanceMax = 600; # Maximum distance each distractor is allowed to travel per turn
+int distractorDistanceVariance = 200; # Random +- modifier to the max distance
+double distractorAnimationDuration = 500.0; # How long does it take the distractor to travel?
 int displayWidth = display_device.width();
 int displayHeight = display_device.height();
 
@@ -24,7 +25,7 @@ begin
   rgb_color colorBackground = colorBackgroundLight;
 
   # Draw box background (to avoid distractors behind the box)
-  p.add_part(new box(boxSize + boxStrokeWidth * 2.0, boxSize + boxStrokeWidth * 2.0, colorBackground), 0, 0);
+  p.add_part(new box(boxSize, boxSize, colorBackground), 0, 0);
 
   # Draw the box, filled or not filled
   if isFilled then
@@ -111,23 +112,52 @@ end;
 sub
   newCoordinates(
     array<double,1>& x,
-    array<double,1>& y
+    array<double,1>& y,
+    bool limitMovement
   )
 begin
-  int count = x.count();
+
+  int maxDistance = random(
+    distractorDistanceMax - distractorDistanceVariance,
+    distractorDistanceMax + distractorDistanceVariance
+  );
+
   loop
     int i = 1;
-  until i > count begin
-    x.fill(i, i, displayWidth * (-0.5) + double(random(distractorSize * (-2), displayWidth + distractorSize * 2)), 0.0);
-    y.fill(i, i, displayHeight * (-0.5) + double(random(distractorSize * (-2), displayHeight + distractorSize * 2)), 0.0);
+  until i > distractorCount begin
+
+    # Calculate new target position
+    double xOld = x[i];
+    double yOld = y[i];
+    double xNew = displayWidth * (-0.5) + double(random(distractorSize * (-2), displayWidth + distractorSize * 2));
+    double yNew = displayHeight * (-0.5) + double(random(distractorSize * (-2), displayHeight + distractorSize * 2));
+
+    # Limit new coordinates to max distance (when required)
+    if limitMovement then
+      double distance = dist(xOld, yOld, xNew, yNew);
+      double ratio = distance / maxDistance;
+      if ratio > 1 then
+        xNew = xOld + (xNew - xOld) * (maxDistance/distance);
+        yNew = yOld + (yNew - yOld) * (maxDistance/distance);
+      end;
+    end;
+
+    x.fill(i, i, xNew, 0.0);
+    y.fill(i, i, yNew, 0.0);
     i = i + 1;
+
   end;
 end;
 
 
 # Makes a trial of a given duration with a fixation cross and sends a trigger
 sub
-  showDistractorTrial(bool isFilled)
+  string showDistractorTrial(
+    bool isGoTrial,
+    bool isTWaveTrial,
+    int tWaveDelay,
+    int judgementResponseWindow
+  )
 begin
 
   # Internal
@@ -137,11 +167,26 @@ begin
   array<double> yTarget[distractorCount];
 
   # Set up initial coordinates
-  newCoordinates(xOrigin, yOrigin);
-  newCoordinates(xTarget, yTarget);
+  newCoordinates(xTarget, yTarget, false);
+  xOrigin = xTarget;
+  yOrigin = yTarget;
+  newCoordinates(xTarget, yTarget, true);
 
+  # Set up timing
+  int movementDelay = 0;
+  if isTWaveTrial then
+    movementDelay = tWaveDelay;
+  end;
+
+  # Set up judgment randomness
   int judgementHeartBeat = random(hearBeatWindow-1, hearBeatWindow+1);
   int judgementDelay = random(0, 600);
+
+  # Set up trial names
+  string triggerNamePrefix;
+  if isGoTrial then triggerNamePrefix = "go_"; else triggerNamePrefix = "no_go_"; end;
+  string triggerNameSuffix;
+  if isTWaveTrial then triggerNameSuffix = "_t_wave"; else triggerNameSuffix = "_r_wave"; end;
 
   # Set up trial
   trial t = new trial;
@@ -154,10 +199,21 @@ begin
 	input_port port = input_port_manager.get_port(1);
 	port.clear();
 
+  # Set up output variable
+  string output = "";
+
+  # Set up success/failure variables
+  bool hasFailed = false;
+  bool hasSucceeded = false;
+
   loop
     int pulseCount = 1;
     bool canBeJudged = false;
+    bool hasResponded = false;
+    int responseCountStart = response_manager.total_response_count();
+    int judgementStart = 0;
     int timeStart = clock.time();
+    array<int> pulseTimes[0];
   until pulseCount > (hearBeatWindow + 2) begin
 
     # Remove last frame
@@ -177,39 +233,102 @@ begin
 
     # Determine how soon the user can make a judgement
     if !canBeJudged && pulseCount == judgementHeartBeat && (timeNow - timeStart) >= judgementDelay then
+
+      if isGoTrial then
+        sendTrigger("go_response");
+      end;
+
       canBeJudged = true;
+      judgementStart = timeNow;
+
+    end;
+
+    # Response handling
+    int responseCountNow = response_manager.total_response_count();
+    if !hasFailed && !hasSucceeded && responseCountNow > responseCountStart then
+			int button_code = response_manager.last_response();
+
+      # Success + Failure Logic
+      if isGoTrial && button_code == 2 && canBeJudged && (timeNow - judgementStart <= judgementResponseWindow) then
+        sendTriggerCustom(triggerNamePrefix + "hit" + triggerNameSuffix, " " + string(judgementResponseWindow));
+        hasSucceeded = true;
+        output = "go_hit";
+      else
+        hasFailed = true;
+        if isGoTrial && timeNow - judgementStart > judgementResponseWindow then
+          sendTriggerCustom(triggerNamePrefix + "miss" + triggerNameSuffix, " " + string(judgementResponseWindow));
+          output = "go_miss";
+        else
+          sendTrigger(triggerNamePrefix + "commission" + triggerNameSuffix);
+        end;
+      end;
+
+      term.print_line(timeNow - judgementStart);
+
+      responseCountStart = responseCountNow;
+		end;
+
+    # Timeout (fail for go)
+    if !hasFailed && canBeJudged && timeNow - judgementStart > judgementResponseWindow then
+      if isGoTrial && !hasSucceeded && canBeJudged then
+        hasFailed = true;
+        sendTriggerCustom(triggerNamePrefix + "miss" + triggerNameSuffix, " " + string(judgementResponseWindow));
+        output = "go_miss";
+      end;
     end;
 
     # Create new frame
     picture p = new picture();
     addDistractors(p, xOrigin, yOrigin, xTarget, yTarget, progress);
-    addBox(p, canBeJudged, false, false);
+    addBox(p, isGoTrial && canBeJudged, hasFailed, hasSucceeded);
     t.add_stimulus_event(p);
 
     # Go through new port codes for heart beat detection
     loop int i = 1; until i > port.total_count()
 		begin
       if port.codes(i) == 255 then
+        pulseTimes.add(timeNow + movementDelay); # Qeue next pulse (with our without delay)
+        break;
+		  end;
+			i = i + 1;
+		end;
+
+    # Set up next pulse when there are more pulses in the cue than have been counted and the last unregistered pulse is in the past
+    if pulseTimes.count() > (pulseCount - 1) then
+
+      if pulseTimes[pulseCount] <= timeNow then
 
         pulseCount = pulseCount + 1;
 
         # Make new coordinates (not for last interval)
         if pulseCount <= (hearBeatWindow + 1) then
+
           timeStart = clock.time();
-          xOrigin = xTarget;
-          yOrigin = yTarget;
-          newCoordinates(xTarget, yTarget);
+          sendTrigger(triggerNamePrefix + "movement" + triggerNameSuffix);
+
+          # Kick off next movement
+          if pulseCount > 2 then
+            xOrigin = xTarget;
+            yOrigin = yTarget;
+            newCoordinates(xTarget, yTarget, true);
+          end;
+
         end;
 
-        break;
+      end;
 
-		  end;
-			i = i + 1;
-		end;
+    end;
 
     port.clear();
     t.present();
 
   end;
+
+  if !isGoTrial && !hasFailed then
+    sendTrigger(triggerNamePrefix + "hit" + triggerNameSuffix);
+    #hasSucceeded = true;
+  end;
+
+  return output;
 
 end;

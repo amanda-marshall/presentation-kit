@@ -15,3 +15,20 @@ begin
   if a > b then out = a; else out = b; end;
   return out;
 end;
+
+# Staircase algorithm
+sub
+  staircase(
+    int& referenceValue,
+    int minimum,
+    int maximum,
+    int increment,
+    bool shouldIncrease
+  )
+begin
+  if shouldIncrease then
+    referenceValue = min(referenceValue + increment, maximum);
+  else
+    referenceValue = max(referenceValue - increment, minimum);
+  end;
+end;
