@@ -1,6 +1,10 @@
 include "showChoiceBinaryScreen.pcl";
+include "showChoiceMultiScreen.pcl";
+include "showDistractorTrial.pcl";
 include "showFixationCross.pcl";
-include "showInstructionScreen.pcl";
-include "showRatingScreen.pcl";
 include "showHeartbeat.pcl";
 include "showImageScreen.pcl";
+include "showInstructionScreen.pcl";
+include "showInstructionScreenBlockEnd.pcl";
+include "showRatingScreen.pcl";
+include "showSound.pcl";

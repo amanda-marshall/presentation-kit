@@ -4,7 +4,9 @@ sub
     string labelA, # Label to display at start of scale
     string labelB, # Label to display at end of scale
     int buttonCodeA, # Button code to press to decrease rating
-    int buttonCodeB # Button code tp press to increase
+    int buttonCodeB, # Button code tp press to increase
+    string triggerNameA,
+    string triggerNameB
   )
 begin
 
@@ -38,5 +40,13 @@ begin
 
   t.add_stimulus_event(p);
   t.present();
+
+  # Send triggers based on user input
+  int lastResponse = response_manager.last_response();
+  if lastResponse == buttonCodeA then
+    sendTrigger(triggerNameA);
+  else
+    sendTrigger(triggerNameB);
+  end;
 
 end;

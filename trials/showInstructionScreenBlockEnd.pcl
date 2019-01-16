@@ -1,0 +1,30 @@
+sub
+  showInstructionScreenBlockEnd(
+    int blockNumber,
+    int totalBlocks
+  )
+begin
+
+  bool isLast = blockNumber == totalBlocks;
+
+  string titel;
+  array<string> paragraphs[0];
+  string message = "Du hast nun ";
+
+  if isLast then
+    titel = "Experiment Abgeschlossen";
+    message = message + "den letzten Block abgeschlossen. Bitte gib der Versuchsleiterin Bescheid.";
+  else
+    titel = "Block Abgeschlossen";
+    message = message + "Block " + string(blockNumber) + " von " + string(totalBlocks) + " abgeschlossen";
+  end;
+
+  paragraphs.add(message);
+
+  showInstructionScreenCustom(
+  	titel, # Title
+  	paragraphs,
+    isLast == false
+  );
+
+end;

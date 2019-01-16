@@ -2,19 +2,20 @@
 sub
   line_graphic getEKGGraphic
 begin
+
   line_graphic ekg = new line_graphic();
+
   ekg.set_line_width(6);
-  ekg.set_line_color(colorHighlightPositive);
+  ekg.set_line_color(colorHighlight);
   ekg.set_join_type(join_circle);
-  ekg.add_line(0, 92, 94.5, 92);
-  array<double> points[][] = {{101, 76.5},{116.5, 102},{125.5, 5.5},
+
+  array<double> points[][] = {{0, 92},{94.5, 92},{101, 76.5},{116.5, 102},{125.5, 5.5},
     {137, 151},{145.5, 92},{199.5, 92},{210.5, 77.5},{223, 102},
     {241.5, 77.5},{259, 113.5},{266,1},{277.5, 167},{286, 92},
     {302, 92},{314.5,73},{328,92},{420,92}};
-  loop int i = 1; until i > points.count() begin
-    ekg.line_to(points[i][1], points[i][2]);
-    i = i + 1;
-  end;
+
+  drawPolyLine(ekg, points, false);
+
   ekg.redraw();
   return ekg;
 end;
@@ -39,6 +40,9 @@ begin
 
   trial t = new trial();
   t.add_stimulus_event(p); # getCross(96, 8, fontColor)
+
+  # Send trigger at start of presentation
+  sendTrigger(triggerName);
 
   # Check if input port was set up
 	bool has_ports = input_port_manager.port_count() > 0;
@@ -89,7 +93,6 @@ begin
         # Don't exceed maximum beep count
         if beepsPresented < count then
           beep.present();
-          sendTrigger(triggerName);
         end;
 
         # Make sure trial is long enough to play whole sound

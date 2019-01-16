@@ -1,0 +1,17 @@
+# Ease in Quadratic
+sub double easeInQuad(double t) begin
+  return t * t;
+end;
+
+# Ease out Quadratic
+sub double easeOutQuad(double t) begin
+  return t * (2.0 - t);
+end;
+
+# Ease in/out Quadratic
+sub double easeInOutQuad(double t) begin
+  if t < 0.5 then
+    return 2.0 * t * t;
+  end;
+  return -1.0 + (4.0 - 2.0 * t) * t;
+end;

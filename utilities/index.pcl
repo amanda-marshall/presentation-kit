@@ -1,4 +1,8 @@
-include "text.pcl";
 include "blocks.pcl";
+include "double.pcl";
+include "easing.pcl";
+include "int.pcl";
+include "line_graphic.pcl";
 include "picture.pcl";
 include "string.pcl";
+include "text.pcl";

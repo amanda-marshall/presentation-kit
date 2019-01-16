@@ -1,6 +1,6 @@
 # Internal variables for global scope
-array<string> triggerNames[0];
-array<int> triggerCodes[0];
+array<string> triggerNamesGlobal[0];
+array<int> triggerCodesGlobal[0];
 
 # Take triggers object and sepearate it into trigger names and trigger codes for later consumtion by sendTrigger and setTrigger
 sub initTriggers(array<string,1>& arr)
@@ -12,9 +12,9 @@ begin
 		i > length
 	begin
 		# Add trigger names to name array
-		triggerNames.add(arr[i]);
+		triggerNamesGlobal.add(arr[i]);
 		# Convert trigger code from string to int and add to code array
-		triggerCodes.add(int(arr[i+1]));
+		triggerCodesGlobal.add(int(arr[i+1]));
 		# Increment (by 2!)
 		i = i + 2;
 	end;
@@ -47,17 +47,17 @@ sub
 begin
 
 	# Find index of specified triggerName amongst all trigger names
-	int index = IndexOf(triggerNames, triggerName);
+	int index = IndexOf(triggerNamesGlobal, triggerName);
 
 	# No trigger found
 	if index == -1 then
-		term.print_line("WARNING: " + triggerName + " could not be found, no trigger sent.");
+		term.print_line("WARNING: '" + triggerName + "' could not be found, no trigger sent.");
 		return;
 	end;
 
 	# Trigger found
-	string tName = triggerNames[index] + suffix;
-	int tCode = triggerCodes[index];
+	string tName = triggerNamesGlobal[index] + suffix;
+	int tCode = triggerCodesGlobal[index];
 
 	# Add triggerName to logfile
 	logfile.add_event_entry(tName);
@@ -91,17 +91,17 @@ sub
 begin
 
 	# Find index of specified triggerName amongst all trigger names
-	int index = IndexOf(triggerNames, triggerName);
+	int index = IndexOf(triggerNamesGlobal, triggerName);
 
 	# No trigger found
 	if index == -1 then
-		term.print_line("WARNING: " + triggerName + " could not be found, no trigger sent.");
+		term.print_line("WARNING: '" + triggerName + "' could not be found, no trigger sent.");
 		return;
 	end;
 
 	# Trigger found
-	string tName = triggerNames[index];
-	int tCode = triggerCodes[index];
+	string tName = triggerNamesGlobal[index];
+	int tCode = triggerCodesGlobal[index];
 
 	event.set_event_code(tName);
 	event.set_port_code(tCode);

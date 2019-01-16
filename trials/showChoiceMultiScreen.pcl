@@ -1,0 +1,68 @@
+sub
+  showChoiceMultiScreen(
+    string labelInstruction, # What should the participant answer
+    array<string,1> labels, # All button labels
+    array<int,1> buttonCodes, # All button codes
+    array<string,1> triggerNames, # Triggers that will be sent depending on what is chosen
+    string triggerNamePrefixHit,
+    string triggerNamePrefixMiss,
+    int buttonHit # The button that represents a hit
+  )
+begin
+
+  # Settings
+  double width = 740;
+  int spacing = 128;
+  int answerCount = labels.count();
+
+  trial t = new trial();
+  t.set_duration(forever);
+  t.set_type(specific_response);
+  t.set_terminator_buttons(buttonCodes);
+
+  picture p = new picture();
+
+  double startY = answerCount * spacing * 0.25;
+  double startX = width * (-0.5);
+
+  text instructions = getText("<b>" + labelInstruction + "</b>", 2);
+  p.add_part(instructions, 0, startY);
+
+  loop
+    int i = 1;
+  until i > answerCount begin
+
+    text line = getText(highlightButtons(labels[i]), 2);
+
+    int iA = i-1;
+    double row = floor(iA/3);
+    double col = iA - row * 3;
+
+    p.add_part(line, 0, startY + (row + 1) * spacing * (-1.0));
+
+    alignPicturePart(p, -1, startX + col * (width * 0.33), false);
+
+    i = i + 1;
+  end;
+
+  t.add_stimulus_event(p);
+  t.present();
+
+  int lastResponse = response_manager.last_response();
+
+  # Find index
+  int responseIndex;
+  loop int i = 1; until i > buttonCodes.count() begin
+    if buttonCodes[i] == lastResponse then
+      responseIndex = i;
+    end;
+    i = i + 1;
+  end;
+
+  if lastResponse == buttonHit then
+    sendTrigger(triggerNamePrefixHit + triggerNames[responseIndex]);
+  else
+    sendTrigger(triggerNamePrefixMiss + triggerNames[responseIndex]);
+  end;
+
+end;
