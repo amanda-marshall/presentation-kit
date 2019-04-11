@@ -213,6 +213,7 @@ begin
     int responseCountStart = response_manager.total_response_count();
     int judgementStart = 0;
     int timeStart = clock.time();
+    int timePulseDeduplicationLimit = timeStart;
     array<int> pulseTimes[0];
   until pulseCount > (hearBeatWindow + 2) begin
 
@@ -284,14 +285,17 @@ begin
     t.add_stimulus_event(p);
 
     # Go through new port codes for heart beat detection
-    loop int i = 1; until i > port.total_count()
-		begin
-      if port.codes(i) == 255 then
-        pulseTimes.add(timeNow + movementDelay); # Qeue next pulse (with our without delay)
-        break;
-		  end;
-			i = i + 1;
-		end;
+    if timePulseDeduplicationLimit <= timeNow then
+      loop int i = 1; until i > port.total_count()
+  		begin
+        if port.codes(i) == 255 then
+          timePulseDeduplicationLimit = timeNow + 400; # Ignore additional pulses for the next 400ms
+          pulseTimes.add(timeNow + movementDelay); # Queue next pulse (with our without delay)
+          break;
+  		  end;
+  			i = i + 1;
+  		end;
+    end;
 
     # Set up next pulse when there are more pulses in the cue than have been counted and the last unregistered pulse is in the past
     if pulseTimes.count() > (pulseCount - 1) then
