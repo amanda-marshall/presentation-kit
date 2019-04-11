@@ -1,3 +1,8 @@
+
+# Prefs
+bool pkPrefsSkipInstructions = false; # When true, all instructions will be skipped
+
+# Includes
 include "showChoiceBinaryScreen.pcl";
 include "showChoiceMultiScreen.pcl";
 include "showDistractorTrial.pcl";

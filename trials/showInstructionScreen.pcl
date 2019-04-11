@@ -46,7 +46,9 @@ begin
 	t.add_stimulus_event(p);
 
 	# Present trial
-	t.present();
+	if !pkPrefsSkipInstructions then
+		t.present();
+	end;
 
 end;
 
