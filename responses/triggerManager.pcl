@@ -2,6 +2,92 @@
 array<string> triggerNamesGlobal[0];
 array<int> triggerCodesGlobal[0];
 
+# Takes a three-dimensional string array of trigger templates, and flattens it
+# out into a list of permutations separated by an underscore. E.g.:
+#
+# Input: { { {"trial"}, {"repetition", "alternation"}, {"go", "nogo"} } }
+#
+# Output: { "trial_repetition_go", "trial_repetition_nogo", "trial_alternation_go", "trial_alternation_nogo" }
+#
+sub
+	initTriggerTemplates(
+		array<string,3> templates
+	)
+begin
+
+	array<string> allTriggers[0];
+
+	# Loop over trigger groups
+	loop
+		int groupIndex = 1;
+		int groupLength = templates.count();
+	until groupIndex > groupLength begin
+
+		array<string> permutations[0];
+
+		# Loop over trigger subgroups
+		loop
+			int subGroupIndex = 1;
+			int subGroupLength = templates[groupIndex].count();
+		until subGroupIndex > subGroupLength begin
+
+			array<string> previousPermutations[0];
+			previousPermutations.assign(permutations);
+			permutations.resize(0);
+
+			# Loop over individual options in subgroup
+			loop
+				int optionIndex = 1;
+				int optionLength = templates[groupIndex][subGroupIndex].count();
+			until optionIndex > optionLength begin
+
+				string option = templates[groupIndex][subGroupIndex][optionIndex];
+
+				# Add this option at the end of every previous permutation
+				if previousPermutations.count() > 0 then
+
+					loop
+						int permutationIndex = 1;
+						int permutationsLength = previousPermutations.count();
+					until permutationIndex > permutationsLength begin
+						permutations.add(previousPermutations[permutationIndex] + "_" + option);
+						permutationIndex = permutationIndex + 1;
+					end;
+
+				# Otherwise add directly to permutations array
+				else
+					permutations.add(option);
+				end;
+
+				optionIndex = optionIndex + 1;
+			end;
+
+			subGroupIndex = subGroupIndex + 1;
+		end;
+
+		# Add all permutations for this group to the complete list
+		allTriggers.append(permutations);
+
+		groupIndex = groupIndex + 1;
+	end;
+
+	output_file outfile = new output_file;
+	outfile.open("trigger_manifest.txt", true);
+
+	loop int i = 1; until i > allTriggers.count() begin
+		string triggerName = allTriggers[i];
+		int triggerCode = i;
+		triggerNamesGlobal.add(triggerName);
+		triggerCodesGlobal.add(triggerCode);
+		outfile.print(string(triggerCode) + ":\t" + triggerName + "\n");
+		i = i + 1;
+	end;
+
+	outfile.close();
+
+end;
+
+
 # Take triggers object and sepearate it into trigger names and trigger codes for later consumtion by sendTrigger and setTrigger
 sub initTriggers(array<string,1>& arr)
 begin
@@ -45,6 +131,12 @@ end;
 sub
 	sendTriggerCustom(string triggerName, string suffix)
 begin
+
+	# Skip over empty trigger names (for testing)
+	if triggerName == "" then
+		term.print("WARNING: Empty trigger name. This should only be used for testing");
+		return;
+	end;
 
 	# Find index of specified triggerName amongst all trigger names
 	int index = IndexOf(triggerNamesGlobal, triggerName);
@@ -90,6 +182,12 @@ sub
 	setTrigger(stimulus_event event, string triggerName)
 begin
 
+	# Skip over empty trigger names (for testing)
+	if triggerName == "" then
+		term.print("WARNING: Empty trigger name. This should only be used for testing");
+		return;
+	end;
+
 	# Find index of specified triggerName amongst all trigger names
 	int index = IndexOf(triggerNamesGlobal, triggerName);
 
@@ -107,6 +205,3 @@ begin
 	event.set_port_code(tCode);
 
 end;
-
-# Initialisation
-initTriggers(triggers);

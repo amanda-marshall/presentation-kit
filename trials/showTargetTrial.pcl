@@ -1,0 +1,45 @@
+sub
+  bool showTargetTrial(
+    int duration,
+    int correctResponse,
+    picture graphic,
+    string triggerNameTrial,
+    string triggerNameHit,
+    string triggerNameMiss,
+    string triggerNameOmission
+  )
+begin
+
+  # Create trial
+  trial t = new trial;
+  t.set_type(first_response);
+  t.set_duration(duration);
+
+  picture p = graphic;
+
+  # Make stimulus event
+  stimulus_event se = t.add_stimulus_event(p);
+  setTrigger(se, triggerNameTrial);
+
+  int responseCountStart = response_manager.total_response_count();
+
+  t.present();
+
+  int responseCountEnd = response_manager.total_response_count();
+  int lastResponse = response_manager.last_response();
+
+  bool isOmission = responseCountStart == responseCountEnd;
+  bool isHit = !isOmission && lastResponse == correctResponse;
+  bool isMiss = !isOmission && lastResponse != correctResponse;
+
+  if isHit then
+    sendTrigger(triggerNameHit);
+  elseif isMiss then
+    sendTrigger(triggerNameMiss);
+  elseif isOmission then
+    sendTrigger(triggerNameOmission);
+  end;
+
+  return isHit;
+
+end;

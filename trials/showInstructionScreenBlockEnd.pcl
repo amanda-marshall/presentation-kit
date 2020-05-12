@@ -1,7 +1,8 @@
 sub
-  showInstructionScreenBlockEnd(
+  showInstructionScreenBlockEndWithCustomMessage(
     int blockNumber,
-    int totalBlocks
+    int totalBlocks,
+    string customMessage
   )
 begin
 
@@ -21,10 +22,29 @@ begin
 
   paragraphs.add(message);
 
+  if customMessage != "" then
+    paragraphs.add(customMessage);
+  end;
+
   showInstructionScreenCustom(
   	titel, # Title
   	paragraphs,
     isLast == false
   );
 
+end;
+
+# Simple End Block Message
+sub
+  showInstructionScreenBlockEnd(
+    int blockNumber,
+    int totalBlocks,
+    string customMessage
+  )
+begin
+  showInstructionScreenBlockEndWithCustomMessage(
+    blockNumber,
+    totalBlocks,
+    ""
+  );
 end;

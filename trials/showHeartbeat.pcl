@@ -1,30 +1,11 @@
-# Draw a simple EKG graphic
 sub
-  line_graphic getEKGGraphic
-begin
-
-  line_graphic ekg = new line_graphic();
-
-  ekg.set_line_width(6);
-  ekg.set_line_color(colorHighlight);
-  ekg.set_join_type(join_circle);
-
-  array<double> points[][] = {{0, 92},{94.5, 92},{101, 76.5},{116.5, 102},{125.5, 5.5},
-    {137, 151},{145.5, 92},{199.5, 92},{210.5, 77.5},{223, 102},
-    {241.5, 77.5},{259, 113.5},{266,1},{277.5, 167},{286, 92},
-    {302, 92},{314.5,73},{328,92},{420,92}};
-
-  drawPolyLine(ekg, points, false);
-
-  ekg.redraw();
-  return ekg;
-end;
-
-sub
-  showHeartbeat(
-    int count,
-    int delay,
-    string triggerName
+  showHeartbeatWithPicture(
+    bool shouldGiveHeartbeatFeedback, # Allow disabling of sound feedback
+    int count, # For how many heartbeats will the stimulus be presnted?
+    int delay, # Millisecond delay to apply to the sound feedback
+    picture graphic, # The graphic to present while the trial is showing
+    string triggerName, # Trigger to send at the beginning of the trial
+    string triggerNameFeedback # Trigger to send when heartbeat feedback is given
   )
 begin
 
@@ -33,13 +14,11 @@ begin
   sound beep = new sound(sine_wave);
   beep.set_attenuation(0.25);
 
-  # Make EKG graphic
-  picture p = new picture();
-  p.set_background_color(colorBackgroundDark);
-  p.add_part(getEKGGraphic(), -210, (-84-8));
+  # Define graphic to show
+  picture p = graphic;
 
   trial t = new trial();
-  t.add_stimulus_event(p); # getCross(96, 8, fontColor)
+  t.add_stimulus_event(p);
 
   # Send trigger at start of presentation
   sendTrigger(triggerName);
@@ -90,8 +69,10 @@ begin
       # Check if first queued, but unplayed heartbeat should be played
       if timeNow >= pendingBeeps[beepsPresented+1] then
 
+        sendTrigger(triggerNameFeedback);
+
         # Don't exceed maximum beep count
-        if beepsPresented < count then
+        if shouldGiveHeartbeatFeedback && beepsPresented < count then
           beep.present();
         end;
 
@@ -107,4 +88,24 @@ begin
 
   end;
 
+end;
+
+sub
+  showHeartbeat(
+    bool shouldGiveHeartbeatFeedback,
+    int count,
+    int delay,
+    string triggerName,
+    string triggerNameFeedback
+  )
+begin
+  picture graphic = getLineGraphic("heartbeat", 1.0, false);
+  showHeartbeatWithPicture(
+    shouldGiveHeartbeatFeedback,
+    count,
+    delay,
+    graphic,
+    triggerName,
+    triggerNameFeedback
+  );
 end;

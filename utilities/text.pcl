@@ -3,9 +3,10 @@ sub
   text getText(string str, int sizeClass)
 begin
   text t = new text();
+  t.set_background_color(colorBackground);
   t.set_font(fontFamily);
   t.set_max_text_width(960);
-  t.set_font_color(fontColor);
+  t.set_font_color(colorText);
   t.set_font_size(fontSizes[sizeClass]);
   t.set_formatted_text(true);
   t.set_caption(str, true);

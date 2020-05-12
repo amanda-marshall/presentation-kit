@@ -21,11 +21,11 @@ sub
 begin
 
   # Internal Settings
-  rgb_color colorForeground = fontColor;
-  rgb_color colorBackground = colorBackgroundLight;
+  rgb_color colorForeground = colorText;
+  rgb_color cBackground = colorBackground;
 
   # Draw box background (to avoid distractors behind the box)
-  p.add_part(new box(boxSize, boxSize, colorBackground), 0, 0);
+  p.add_part(new box(boxSize, boxSize, cBackground), 0, 0);
 
   # Draw the box, filled or not filled
   if isFilled then
@@ -48,7 +48,7 @@ begin
 
     # Pick line color based on filled/unfilled box background
     if isFilled then
-      lg.set_line_color(colorBackground);
+      lg.set_line_color(cBackground);
     else
       lg.set_line_color(colorForeground);
     end;
@@ -87,8 +87,8 @@ sub
 begin
 
   # Internal Settings
-  rgb_color colorForeground = fontColor;
-  rgb_color colorBackground = colorBackgroundLight;
+  rgb_color colorForeground = colorText;
+  rgb_color cBackground = colorBackground;
 
   loop
     int i = 1;

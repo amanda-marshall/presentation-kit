@@ -32,3 +32,26 @@ begin
     referenceValue = max(referenceValue - increment, minimum);
   end;
 end;
+
+# Returns a random index between 1 and `count`
+sub int randomIndex(int count) begin
+  if count < 1 then
+    exit("Count cannot be negative");
+  end;
+  return random(1, count);
+end;
+
+# Returns a random index between 1 and `count` and is non-repeating
+int refRandomIndexLast = -1;
+sub
+  int randomNonRepeatingIndex(int count)
+begin
+  if count < 1 then
+    exit("Count cannot be negative");
+  end;
+  int newIndex = refRandomIndexLast;
+  loop until refRandomIndexLast != newIndex begin
+    newIndex = random(1, count);
+  end;
+  return newIndex;
+end;

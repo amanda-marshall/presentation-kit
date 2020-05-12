@@ -1,0 +1,35 @@
+## Color Basics
+rgb_color colorBackgroundLight = rgb_color(220, 220, 220);
+rgb_color colorBackgroundDark = rgb_color(51, 51, 51);
+rgb_color colorHighlight = rgb_color(47, 128, 237);
+rgb_color colorHighlightLight = rgb_color(147, 184, 234);
+rgb_color colorHighlightPositive = rgb_color(39, 174, 96);
+rgb_color colorTextLight = rgb_color(0, 0, 0);
+rgb_color colorTextDark = rgb_color(255, 255, 255);
+
+## Font Basics
+string fontFamily = "Arial";
+array<int> fontSizes[] = { 18, 24, 36 };
+
+# Theme roles
+rgb_color colorBackground;
+rgb_color colorText;
+
+# Function for setting the theme
+sub
+  setTheme(
+    string themeId
+  )
+begin
+  if themeId == "light" then
+    colorBackground = colorBackgroundLight;
+    colorText = colorTextLight;
+  end;
+  if themeId == "dark" then
+    colorBackground = colorBackgroundDark;
+    colorText = colorTextDark;
+  end;
+end;
+
+# Set the theme to light by default
+setTheme("light");

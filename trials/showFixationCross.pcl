@@ -7,8 +7,9 @@ sub
   )
 begin
   picture p = new picture();
-  p.add_part(new box(barWidth, size, fontColor), 0, 0);
-  p.add_part(new box(size, barWidth, fontColor), 0, 0);
+  p.set_background_color(colorBackground);
+  p.add_part(new box(barWidth, size, colorText), 0, 0);
+  p.add_part(new box(size, barWidth, colorText), 0, 0);
   return p;
 end;
 
@@ -22,7 +23,7 @@ begin
 
   trial t = new trial;
 
-  picture fixationCross = getCross(96, 8, fontColor);
+  picture fixationCross = getCross(96, 8, colorText);
   stimulus_event se = t.add_stimulus_event(fixationCross);
   setTrigger(se, triggerName);
 

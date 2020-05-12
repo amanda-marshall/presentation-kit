@@ -40,7 +40,7 @@ begin
 
   # Make Sound graphic
   picture p = new picture();
-  p.set_background_color(colorBackgroundDark);
+  p.set_background_color(colorBackground);
   p.add_part(getSoundGraphic(), -83, -69);
   t.add_stimulus_event(p);
 

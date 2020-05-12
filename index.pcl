@@ -1,21 +1,10 @@
 # Settings
 
-## Color theme
-rgb_color colorBackgroundLight = rgb_color(220, 220, 220);
-rgb_color colorBackgroundDark = rgb_color(51, 51, 51);
-rgb_color colorHighlight = rgb_color(47, 128, 237);
-rgb_color colorHighlightLight = rgb_color(147, 184, 234);
-rgb_color colorHighlightPositive = rgb_color(39, 174, 96);
-
-## Fonts
-string fontFamily = "Arial";
-rgb_color fontColor = rgb_color(0, 0, 0);
-array<int> fontSizes[] = { 18, 24, 36 };
-
 ## Default labels
 string defaultLabelContinue = "Drücke [Enter] um fortzufahren";
 
 # Include submodules
+include "themes.pcl" # Everything related to color
 include "files/index.pcl"; # File utilities
 include "responses/index.pcl"; # Response module
 include "utilities/index.pcl"; # Utility modules

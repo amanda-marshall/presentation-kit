@@ -13,3 +13,4 @@ include "showInstructionScreen.pcl";
 include "showInstructionScreenBlockEnd.pcl";
 include "showRatingScreen.pcl";
 include "showSound.pcl";
+include "showTargetTrial.pcl";

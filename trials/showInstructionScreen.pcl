@@ -11,6 +11,7 @@ begin
 	t.set_duration(forever);
 
 	picture p = new picture();
+	p.set_background_color(colorBackground);
 
 	string allText = "";
 

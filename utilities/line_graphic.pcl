@@ -1,3 +1,37 @@
+# Settings
+int defaultLineGraphicStrokeWidth = 8;
+int defaultLineGrapgicOutlineWidth = 4;
+rgb_color defaultLinegraphicColor = colorHighlight;
+
+sub
+  getGraphicPoints(
+    array<double,2>& points,
+    string graphicId
+  )
+begin
+
+  if graphicId == "heartbeat" then
+    points.append({{0, 92},{94.5, 92},{101, 76.5},{116.5, 102},{125.5, 5.5},
+      {137, 151},{145.5, 92},{199.5, 92},{210.5, 77.5},{223, 102},
+      {241.5, 77.5},{259, 113.5},{266,1},{277.5, 167},{286, 92},
+      {302, 92},{314.5,73},{328,92},{420,92}});
+    return;
+  end;
+
+  if graphicId == "arrowRight" then
+    points.append({{0.0, 56.0},{160.0, 56.0},{104.0, 0.0},{160.0, 56.0},{104.0, 112.0},{160.0, 56.0}});
+    return;
+  end;
+
+  if graphicId == "arrowLeft" then
+    points.append({{160.0, 56.0},{0.0, 56.0},{56.0, 0.0},{0.0, 56.0},{56.0, 112.0},{0.0, 56.0}});
+    return;
+  end;
+
+  term.print_line("WARNING: No line graphic with an ID of '" + graphicId + "' could be found");
+
+end;
+
 # Utility function for drawing a polyline that can be optionally closed
 sub
   drawPolyLineScaled(
@@ -44,4 +78,104 @@ sub
   )
 begin
   drawPolyLineScaled(lineGraphic, points, 1.0, shouldClose);
+end;
+
+# Utility function for measuring the dimensions of a line graphic
+# Mostly used for centering the graphic
+sub
+  array<double,1> getLineGraphicDimensions(
+    array<double,2> points
+  )
+begin
+  double minX = 0.0;
+  double maxX = 0.0;
+  double minY = 0.0;
+  double maxY = 0.0;
+
+  # Find minimum and maximum X and Y dimensions
+  loop int i = 1; until i > points.count() begin
+    double x = points[i][1];
+    double y = points[i][2];
+    if i == 1 then
+      minX = x;
+      maxX = x;
+      minY = y;
+      maxY = y;
+    else
+      if x < minX then minX = x; end;
+      if x > maxX then maxX = x; end;
+      if y < minY then minY = y; end;
+      if y > maxY then maxY = y; end;
+    end;
+    i = i + 1;
+  end;
+
+  array<double> output[0];
+  output.add(maxX - minX); # Width
+  output.add(maxY - minY); # Height
+  return output;
+end;
+
+
+# Utility function for creating a new line graphic from a
+sub
+  addLineGraphicToPicture(
+    picture& p,
+    string graphicId,
+    double scalingFactor,
+    bool shouldClose,
+    bool isOutlined
+  )
+begin
+
+  # Draw the same line graphic larger with the background color, if it should be outlined
+  if isOutlined then
+    int defaultLineWidth = defaultLineGraphicStrokeWidth;
+    rgb_color defaultColor = defaultLinegraphicColor;
+    defaultLineGraphicStrokeWidth = defaultLineWidth + defaultLineGrapgicOutlineWidth * 2;
+    defaultLinegraphicColor = colorBackground;
+    addLineGraphicToPicture(
+      p,
+      graphicId,
+      scalingFactor,
+      shouldClose,
+      false
+    );
+    defaultLineGraphicStrokeWidth = defaultLineWidth;
+    defaultLinegraphicColor = defaultColor;
+  end;
+
+  # Retrieve points of graphic to be drawn
+  array<double> points[0][0];
+  getGraphicPoints(points, graphicId);
+
+  line_graphic lineGraphic = new line_graphic();
+
+  lineGraphic.set_line_width(defaultLineGraphicStrokeWidth);
+  lineGraphic.set_line_color(defaultLinegraphicColor);
+  lineGraphic.set_join_type(join_circle);
+
+  drawPolyLineScaled(lineGraphic, points, scalingFactor, shouldClose);
+  lineGraphic.redraw();
+
+  array<double> dimensions[2] = getLineGraphicDimensions(points);
+  double offsetX = dimensions[1] * (-0.5) * scalingFactor;
+  double offsetY = dimensions[2] * 0.5 * scalingFactor;
+
+  p.add_part(lineGraphic, offsetX, offsetY);
+
+end;
+
+# Convenience function for getting a ready-made picture with a centered line graphic
+sub
+  picture getLineGraphic(
+    string graphicId,
+    double scalingFactor,
+    bool shouldClose
+  )
+begin
+  picture p = new picture();
+  p.set_background_color(colorBackground);
+  addLineGraphicToPicture(p, graphicId, scalingFactor, shouldClose, false);
+  return p;
 end;
